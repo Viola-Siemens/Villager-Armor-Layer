@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="GNU Affero General Public License v3.0"
+issueTrackerURL="https://github.com/Viola-Siemens/Villager-Armor-Layer/issues"
+
+[[mods]]
+modId="villagerarmor"
+version="${file.jarVersion}"
+displayName="Villager Armor Layer"
+logoFile="logo.png"
+credits="Liu Dongyu"
+authors="Hexagram"
+description='''
+With this mod, villagers and illagers' armor layer will be rendered.
+'''
+
+[[dependencies.villagerarmor]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.villagerarmor]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"

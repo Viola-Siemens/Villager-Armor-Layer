@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "com.hexagram2021.villagerarmor.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "villagerarmor.refmap.json",
+  "minVersion": "0.8",
+  "client": [
+  ]
+}

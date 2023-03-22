@@ -30,11 +30,11 @@ public class VillagerArmorModel extends SegmentedModel<AbstractVillagerEntity> i
 		this.body.addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, root + 1.0F);
 		this.rightLeg = new ModelRenderer(this, 0, 16);
 		this.rightLeg.setPos(-2.0F, 12.0F, 0.0F);
-		this.rightLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root);
+		this.rightLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root - 0.1F);
 		this.leftLeg = new ModelRenderer(this, 0, 16);
 		this.leftLeg.mirror = true;
 		this.leftLeg.setPos(2.0F, 12.0F, 0.0F);
-		this.leftLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root);
+		this.leftLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root - 0.1F);
 		this.arms = new ModelRenderer(this, 40, 16);
 		this.arms.setPos(0.0F, 2.0F, 0.0F);
 		this.arms.addBox(-8.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F, root);

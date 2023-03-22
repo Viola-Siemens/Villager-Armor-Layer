@@ -29,12 +29,12 @@ public class VillagerArmorModel extends SegmentedModel<AbstractVillagerEntity> i
 		this.body = new ModelRenderer(this, 16, 16);
 		this.body.addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, root + 1.0F);
 		this.rightLeg = new ModelRenderer(this, 0, 16);
-		this.rightLeg.setPos(-4.0F, 12.0F, 0.0F);
-		this.rightLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root + 0.1F);
+		this.rightLeg.setPos(-2.0F, 12.0F, 0.0F);
+		this.rightLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root);
 		this.leftLeg = new ModelRenderer(this, 0, 16);
 		this.leftLeg.mirror = true;
-		this.leftLeg.setPos(4.0F, 12.0F, 0.0F);
-		this.leftLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root + 0.1F);
+		this.leftLeg.setPos(2.0F, 12.0F, 0.0F);
+		this.leftLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root);
 		this.arms = new ModelRenderer(this, 40, 16);
 		this.arms.setPos(0.0F, 2.0F, 0.0F);
 		this.arms.addBox(-8.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F, root);
@@ -84,6 +84,7 @@ public class VillagerArmorModel extends SegmentedModel<AbstractVillagerEntity> i
 			VillagerModel<?> villagerModel = (VillagerModel<?>) model;
 			this.head.copyFrom(villagerModel.head);
 			this.body.copyFrom(villagerModel.body);
+			this.arms.copyFrom(villagerModel.arms);
 			this.rightLeg.copyFrom(villagerModel.leg0);
 			this.leftLeg.copyFrom(villagerModel.leg1);
 		}

@@ -20,6 +20,9 @@ public interface IHumanoidModel {
 		this.setLegsVisible(visible);
 	}
 
+	default <E extends Entity> void afterSetPartVisibility(EntityModel<E> model) {
+	}
+
 	<E extends Entity> void propertiesCopyFrom(EntityModel<E> model);
 
 	void renderModelToBuffer(MatrixStack transform, IVertexBuilder builder, int uv2, int overlayType, float r, float g, float b, float a);

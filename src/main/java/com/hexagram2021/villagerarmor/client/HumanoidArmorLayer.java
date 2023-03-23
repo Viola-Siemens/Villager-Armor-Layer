@@ -50,6 +50,7 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends SegmentedModel
 			if (armoritem.getSlot() == slotType) {
 				model.propertiesCopyFrom(this.getParentModel());
 				this.setPartVisibility(model, slotType);
+				model.afterSetPartVisibility(this.getParentModel());
 				boolean foil = itemstack.hasFoil();
 				if (armoritem instanceof IDyeableArmorItem) {
 					int i = ((IDyeableArmorItem)armoritem).getColor(itemstack);

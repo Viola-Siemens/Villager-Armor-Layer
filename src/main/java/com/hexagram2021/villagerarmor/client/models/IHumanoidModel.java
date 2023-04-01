@@ -1,9 +1,9 @@
 package com.hexagram2021.villagerarmor.client.models;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.client.renderer.entity.model.EntityModel;
-import net.minecraft.entity.Entity;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.world.entity.Entity;
 
 public interface IHumanoidModel {
 	void setHeadVisible(boolean visible);
@@ -25,5 +25,5 @@ public interface IHumanoidModel {
 
 	<E extends Entity> void propertiesCopyFrom(EntityModel<E> model);
 
-	void renderModelToBuffer(MatrixStack transform, IVertexBuilder builder, int uv2, int overlayType, float r, float g, float b, float a);
+	void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, float r, float g, float b, float a);
 }

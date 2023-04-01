@@ -1,44 +1,58 @@
 package com.hexagram2021.villagerarmor.client.models;
 
-import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.client.renderer.entity.model.EntityModel;
-import net.minecraft.client.renderer.entity.model.IHeadToggle;
-import net.minecraft.client.renderer.entity.model.SegmentedModel;
-import net.minecraft.client.renderer.entity.model.VillagerModel;
-import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
-import net.minecraft.util.math.MathHelper;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.VillagerHeadModel;
+import net.minecraft.client.model.VillagerModel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.AbstractVillager;
 
 import javax.annotation.Nonnull;
 
-public class VillagerArmorModel extends SegmentedModel<AbstractVillagerEntity> implements IHumanoidModel, IHeadToggle {
-	protected ModelRenderer head;
-	protected final ModelRenderer body;
-	protected final ModelRenderer arms;
-	protected final ModelRenderer leftLeg;
-	protected final ModelRenderer rightLeg;
+public class VillagerArmorModel extends HierarchicalModel<AbstractVillager> implements IHumanoidModel, VillagerHeadModel {
+	protected final ModelPart root;
+	protected final ModelPart head;
+	protected final ModelPart body;
+	protected final ModelPart arms;
+	protected final ModelPart leftLeg;
+	protected final ModelPart rightLeg;
 	
-	public VillagerArmorModel(float root) {
-		this.texWidth = 64;
-		this.texHeight = 32;
-		this.head = new ModelRenderer(this, 0, 0);
-		this.head.addBox(-4.0F, -10.0F, -4.0F, 8.0F, 8.0F, 8.0F, root);
-		this.body = new ModelRenderer(this, 16, 16);
-		this.body.addBox(-4.0F, 1.0F, -2.0F, 8.0F, 12.0F, 4.0F, root + 1.0F);
-		this.rightLeg = new ModelRenderer(this, 0, 16);
-		this.rightLeg.setPos(-2.0F, 12.0F, 0.0F);
-		this.rightLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root - 0.1F);
-		this.leftLeg = new ModelRenderer(this, 0, 16);
-		this.leftLeg.mirror = true;
-		this.leftLeg.setPos(2.0F, 12.0F, 0.0F);
-		this.leftLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, root - 0.1F);
-		this.arms = new ModelRenderer(this, 40, 16);
-		this.arms.setPos(0.0F, 2.0F, 0.0F);
-		this.arms.addBox(-8.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F, root);
-		this.arms.addBox(4.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F, root, true);
+	public VillagerArmorModel(ModelPart root) {
+		this.root = root;
+		this.head = root.getChild("head");
+		this.body = root.getChild("body");
+		this.arms = root.getChild("arms");
+		this.rightLeg = root.getChild("right_leg");
+		this.leftLeg = root.getChild("left_leg");
+	}
+	
+	public static LayerDefinition createBodyLayer(CubeDeformation cubeDeformation, float y) {
+		MeshDefinition meshdefinition = new MeshDefinition();
+		PartDefinition partdefinition = meshdefinition.getRoot();
+		partdefinition.addOrReplaceChild("head",
+				CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 8.0F, 8.0F, cubeDeformation),
+				PartPose.offset(0.0F, 0.0F + y, 0.0F));
+		partdefinition.addOrReplaceChild("body",
+				CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 1.0F, -2.0F, 8.0F, 12.0F, 4.0F, cubeDeformation.extend(1.0F, 1.0F, 0.25F)),
+				PartPose.offset(0.0F, 0.0F + y, 0.0F));
+		partdefinition.addOrReplaceChild("arms",
+				CubeListBuilder.create()
+						.texOffs(40, 16).addBox(-8.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F, cubeDeformation)
+						.texOffs(40, 16).mirror().addBox(4.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F, cubeDeformation),
+				PartPose.offset(0.0F, 2.0F + y, 0.0F));
+		partdefinition.addOrReplaceChild("right_leg",
+				CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, cubeDeformation.extend(-0.1F)),
+				PartPose.offset(-2.0F, 12.0F + y, 0.0F));
+		partdefinition.addOrReplaceChild("left_leg",
+				CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, cubeDeformation.extend(-0.1F)),
+				PartPose.offset(2.0F, 12.0F + y, 0.0F));
+		return LayerDefinition.create(meshdefinition, 64, 32);
 	}
 
 	@Override
@@ -80,18 +94,17 @@ public class VillagerArmorModel extends SegmentedModel<AbstractVillagerEntity> i
 		this.attackTime = model.attackTime;
 		this.riding = model.riding;
 		this.young = model.young;
-		if(model instanceof VillagerModel) {
-			VillagerModel<?> villagerModel = (VillagerModel<?>) model;
+		if(model instanceof VillagerModel<?> villagerModel) {
 			this.head.copyFrom(villagerModel.head);
-			this.body.copyFrom(villagerModel.body);
-			this.arms.copyFrom(villagerModel.arms);
-			this.rightLeg.copyFrom(villagerModel.leg0);
-			this.leftLeg.copyFrom(villagerModel.leg1);
+			this.body.copyFrom(villagerModel.root.getChild("body"));
+			this.arms.copyFrom(villagerModel.root.getChild("arms"));
+			this.rightLeg.copyFrom(villagerModel.rightLeg);
+			this.leftLeg.copyFrom(villagerModel.leftLeg);
 		}
 	}
 
 	@Override
-	public void renderModelToBuffer(MatrixStack transform, IVertexBuilder builder, int uv2, int overlayType, float r, float g, float b, float a) {
+	public void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, float r, float g, float b, float a) {
 		this.renderToBuffer(transform, builder, uv2, overlayType, r, g, b, a);
 	}
 
@@ -101,16 +114,16 @@ public class VillagerArmorModel extends SegmentedModel<AbstractVillagerEntity> i
 	}
 
 	@Override @Nonnull
-	public Iterable<ModelRenderer> parts() {
-		return ImmutableList.of(this.head, this.body, this.leftLeg, this.rightLeg, this.arms);
+	public ModelPart root() {
+		return this.root;
 	}
 
 	@Override
-	public void setupAnim(@Nonnull AbstractVillagerEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+	public void setupAnim(@Nonnull AbstractVillager entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
 		this.head.xRot = headPitch * ((float)Math.PI / 180F);
 		if (entity.getUnhappyCounter() > 0) {
-			this.head.zRot = 0.3F * MathHelper.sin(0.45F * ageInTicks);
+			this.head.zRot = 0.3F * Mth.sin(0.45F * ageInTicks);
 			this.head.xRot = 0.4F;
 		} else {
 			this.head.zRot = 0.0F;
@@ -119,8 +132,8 @@ public class VillagerArmorModel extends SegmentedModel<AbstractVillagerEntity> i
 		this.arms.y = 3.0F;
 		this.arms.z = -1.0F;
 		this.arms.xRot = -0.75F;
-		this.rightLeg.xRot = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-		this.leftLeg.xRot = MathHelper.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+		this.rightLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
+		this.leftLeg.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount * 0.5F;
 		this.rightLeg.yRot = 0.0F;
 		this.leftLeg.yRot = 0.0F;
 	}

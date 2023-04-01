@@ -5,13 +5,14 @@ import com.hexagram2021.villagerarmor.client.models.VillagerArmorModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import static com.hexagram2021.villagerarmor.VillagerArmor.MODID;
 
-@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class VALModelLayers {
 	public static final ModelLayerLocation VILLAGER_INNER_ARMOR = registerInnerArmor("villager");
 	public static final ModelLayerLocation VILLAGER_OUTER_ARMOR = registerOuterArmor("villager");
@@ -32,9 +33,9 @@ public class VALModelLayers {
 	
 	@SubscribeEvent
 	public static void onRegisterLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
-		event.registerLayerDefinition(VILLAGER_INNER_ARMOR, () -> VillagerArmorModel.createBodyLayer(new CubeDeformation(0.5F), 0.0F));
-		event.registerLayerDefinition(VILLAGER_OUTER_ARMOR, () -> VillagerArmorModel.createBodyLayer(new CubeDeformation(1.0F), 0.0F));
-		event.registerLayerDefinition(ILLAGER_INNER_ARMOR, () -> IllagerArmorModel.createBodyLayer(new CubeDeformation(0.5F), 0.0F));
-		event.registerLayerDefinition(ILLAGER_INNER_ARMOR, () -> IllagerArmorModel.createBodyLayer(new CubeDeformation(1.0F), 0.0F));
+		event.registerLayerDefinition(VILLAGER_INNER_ARMOR, () -> VillagerArmorModel.createBodyLayer(new CubeDeformation(0.0F), 0.0F, 0.25F));
+		event.registerLayerDefinition(VILLAGER_OUTER_ARMOR, () -> VillagerArmorModel.createBodyLayer(new CubeDeformation(1.0F), 0.0F, -0.5F));
+		event.registerLayerDefinition(ILLAGER_INNER_ARMOR, () -> IllagerArmorModel.createBodyLayer(new CubeDeformation(0.0F), 0.0F, 0.25F));
+		event.registerLayerDefinition(ILLAGER_OUTER_ARMOR, () -> IllagerArmorModel.createBodyLayer(new CubeDeformation(1.0F), 0.0F, -0.5F));
 	}
 }

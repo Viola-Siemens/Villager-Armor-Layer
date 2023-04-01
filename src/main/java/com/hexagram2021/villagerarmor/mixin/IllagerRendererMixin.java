@@ -3,7 +3,6 @@ package com.hexagram2021.villagerarmor.mixin;
 import com.hexagram2021.villagerarmor.client.VALModelLayers;
 import com.hexagram2021.villagerarmor.client.VillagerArmorLayer;
 import com.hexagram2021.villagerarmor.client.models.IllagerArmorModel;
-import com.hexagram2021.villagerarmor.client.models.VillagerArmorModel;
 import net.minecraft.client.model.IllagerModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.IllagerRenderer;

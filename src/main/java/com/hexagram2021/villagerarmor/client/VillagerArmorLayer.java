@@ -98,6 +98,7 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 		return slotType == EquipmentSlot.LEGS;
 	}
 
+	@SuppressWarnings("UnstableApiUsage")
 	public ResourceLocation getArmorResource(Entity entity, ItemStack stack, EquipmentSlot slot, @Nullable String type) {
 		ArmorItem item = (ArmorItem)stack.getItem();
 		String texture = item.getMaterial().getName();

@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[37,)"
+loaderVersion="[38,)"
 license="GNU Affero General Public License v3.0"
 issueTrackerURL="https://github.com/Viola-Siemens/Villager-Armor-Layer/issues"
 
@@ -17,12 +17,12 @@ With this mod, villagers and illagers' armor layer will be rendered.
 [[dependencies.villagerarmor]]
     modId="forge"
     mandatory=true
-    versionRange="[37,)"
+    versionRange="[38,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.villagerarmor]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.17.1,1.18)"
+    versionRange="[1.18,1.19)"
     ordering="NONE"
     side="BOTH"

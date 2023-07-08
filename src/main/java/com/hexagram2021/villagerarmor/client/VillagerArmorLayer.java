@@ -46,7 +46,7 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 	private void renderArmorPiece(PoseStack transform, MultiBufferSource buffer, T entity, EquipmentSlot slotType, int uv2, A model) {
 		ItemStack itemstack = entity.getItemBySlot(slotType);
 		if (itemstack.getItem() instanceof ArmorItem armoritem) {
-			if (armoritem.getSlot() == slotType) {
+			if (armoritem.getEquipmentSlot() == slotType) {
 				model.propertiesCopyFrom(this.getParentModel());
 				this.setPartVisibility(model, slotType);
 				model.afterSetPartVisibility(this.getParentModel());

@@ -5,9 +5,10 @@
   "refmap": "villagerarmor.refmap.json",
   "minVersion": "0.8",
   "client": [
-    "IllagerRendererMixin",
-    "VillagerRendererMixin",
-    "WanderingTraderRendererMixin",
-    "WitchRendererMixin"
+	"IllagerRendererMixin",
+	"IronGolemRendererMixin",
+	"VillagerRendererMixin",
+	"WanderingTraderRendererMixin",
+	"WitchRendererMixin"
   ]
 }

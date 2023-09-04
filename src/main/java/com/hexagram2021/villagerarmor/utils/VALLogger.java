@@ -4,7 +4,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 public class VALLogger {
-	public static boolean debugMode = true;
+	public static final boolean debugMode = true;
+	
+	@SuppressWarnings("NotNullFieldNotInitialized")
 	public static Logger logger;
 
 	public static void log(Level logLevel, Object object) {

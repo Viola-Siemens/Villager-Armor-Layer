@@ -16,9 +16,11 @@ public class IronGolemRendererMixin {
 	@Inject(method = "<init>", at = @At(value = "RETURN"))
 	public void addIllagerArmorLayer(EntityRendererProvider.Context context, CallbackInfo ci) {
 		IronGolemRenderer current = ((IronGolemRenderer)(Object)this);
-		current.addLayer(new VillagerArmorLayer<>(current,
+		current.addLayer(new VillagerArmorLayer<>(
+				current,
 				new IronGolemArmorModel(context.bakeLayer(VALModelLayers.IRON_GOLEM_INNER_ARMOR)),
-				new IronGolemArmorModel(context.bakeLayer(VALModelLayers.IRON_GOLEM_OUTER_ARMOR))
+				new IronGolemArmorModel(context.bakeLayer(VALModelLayers.IRON_GOLEM_OUTER_ARMOR)),
+				context.getModelManager()
 		));
 		current.addLayer(new ElytraLayer<>(current, context.getModelSet()));
 	}

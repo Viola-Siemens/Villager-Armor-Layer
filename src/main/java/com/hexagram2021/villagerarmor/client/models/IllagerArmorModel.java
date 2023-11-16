@@ -10,9 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.AbstractIllager;
 
-import javax.annotation.Nonnull;
-
-public class IllagerArmorModel extends HierarchicalModel<AbstractIllager> implements IHumanoidModel, VillagerHeadModel {
+public class IllagerArmorModel<T extends AbstractIllager> extends HierarchicalModel<T> implements IHumanoidModel, VillagerHeadModel {
 	protected final ModelPart root;
 	protected final ModelPart head;
 	protected final ModelPart body;
@@ -87,7 +85,7 @@ public class IllagerArmorModel extends HierarchicalModel<AbstractIllager> implem
 	}
 
 	@SuppressWarnings("unused")
-	public void copyPropertiesTo(IllagerArmorModel model) {
+	public void copyPropertiesTo(IllagerArmorModel<T> model) {
 		super.copyPropertiesTo(model);
 		model.head.copyFrom(this.head);
 		model.body.copyFrom(this.body);
@@ -133,13 +131,13 @@ public class IllagerArmorModel extends HierarchicalModel<AbstractIllager> implem
 		this.head.visible = visible;
 	}
 
-	@Override @Nonnull
+	@Override
 	public ModelPart root() {
 		return this.root;
 	}
 
 	@Override
-	public void setupAnim(@Nonnull AbstractIllager entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
 		this.head.xRot = headPitch * ((float)Math.PI / 180F);
 		this.arms.y = 3.0F;

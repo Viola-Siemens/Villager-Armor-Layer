@@ -19,9 +19,11 @@ public class IllagerRendererMixin<T extends AbstractIllager> {
 	@Inject(method = "<init>", at = @At(value = "RETURN"))
 	public void addIllagerArmorLayer(EntityRendererProvider.Context context, IllagerModel<T> model, float shadowRadius, CallbackInfo ci) {
 		IllagerRenderer<T> current = ((IllagerRenderer<T>)(Object)this);
-		current.addLayer(new VillagerArmorLayer<>(current,
-				new IllagerArmorModel(context.bakeLayer(VALModelLayers.ILLAGER_INNER_ARMOR)),
-				new IllagerArmorModel(context.bakeLayer(VALModelLayers.ILLAGER_OUTER_ARMOR))
+		current.addLayer(new VillagerArmorLayer<>(
+				current,
+				new IllagerArmorModel<>(context.bakeLayer(VALModelLayers.ILLAGER_INNER_ARMOR)),
+				new IllagerArmorModel<>(context.bakeLayer(VALModelLayers.ILLAGER_OUTER_ARMOR)),
+				context.getModelManager()
 		));
 		current.addLayer(new ElytraLayer<>(current, context.getModelSet()));
 	}

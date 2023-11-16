@@ -12,8 +12,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.IronGolem;
 
-import javax.annotation.Nonnull;
-
 public class IronGolemArmorModel extends HierarchicalModel<IronGolem> implements IHumanoidModel {
 	protected final ModelPart root;
 	protected final ModelPart head;
@@ -113,13 +111,13 @@ public class IronGolemArmorModel extends HierarchicalModel<IronGolem> implements
 		this.renderToBuffer(transform, builder, uv2, overlayType, r, g, b, a);
 	}
 
-	@Override @Nonnull
+	@Override
 	public ModelPart root() {
 		return this.root;
 	}
 
 	@Override
-	public void setupAnim(@Nonnull IronGolem entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+	public void setupAnim(IronGolem entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 		this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
 		this.head.xRot = headPitch * ((float)Math.PI / 180F);
 		this.rightLeg.xRot = -1.5F * Mth.triangleWave(limbSwing, 13.0F) * limbSwingAmount;

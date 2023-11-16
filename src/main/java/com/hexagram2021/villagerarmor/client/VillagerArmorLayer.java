@@ -5,38 +5,45 @@ import com.hexagram2021.villagerarmor.client.models.IHumanoidModel;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraftforge.client.ForgeHooksClient;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalModel<T>, A extends IHumanoidModel> extends RenderLayer<T, M> {
+public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalModel<T>, A extends HierarchicalModel<T> & IHumanoidModel> extends RenderLayer<T, M> {
 	private static final Map<String, ResourceLocation> ARMOR_LOCATION_CACHE = Maps.newHashMap();
 	private final A innerModel;
 	private final A outerModel;
+	private final TextureAtlas armorTrimAtlas;
 
-	public VillagerArmorLayer(RenderLayerParent<T, M> renderer, A innerModel, A outerModel) {
+	public VillagerArmorLayer(RenderLayerParent<T, M> renderer, A innerModel, A outerModel, ModelManager modelManager) {
 		super(renderer);
 		this.innerModel = innerModel;
 		this.outerModel = outerModel;
+		this.armorTrimAtlas = modelManager.getAtlas(Sheets.ARMOR_TRIMS_SHEET);
 	}
 
 	@Override
-	public void render(@Nonnull PoseStack transform, @Nonnull MultiBufferSource buffer, int uv2, @Nonnull T entity, float f1, float f2, float ticks, float f3, float f4, float xRot) {
+	public void render(PoseStack transform, MultiBufferSource buffer, int uv2, T entity, float f1, float f2, float ticks, float f3, float f4, float xRot) {
 		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.CHEST, uv2, this.getArmorModel(EquipmentSlot.CHEST));
 		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.LEGS, uv2, this.getArmorModel(EquipmentSlot.LEGS));
 		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.FEET, uv2, this.getArmorModel(EquipmentSlot.FEET));
@@ -50,18 +57,23 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 				model.propertiesCopyFrom(this.getParentModel());
 				this.setPartVisibility(model, slotType);
 				model.afterSetPartVisibility(this.getParentModel());
-				boolean foil = itemstack.hasFoil();
+				boolean inner = this.usesInnerModel(slotType);
 				if (armoritem instanceof DyeableLeatherItem leatherItem) {
 					int i = leatherItem.getColor(itemstack);
 					float r = (float)(i >> 16 & 255) / 255.0F;
 					float g = (float)(i >> 8 & 255) / 255.0F;
 					float b = (float)(i & 255) / 255.0F;
-					this.renderModel(transform, buffer, uv2, foil, model, r, g, b, this.getArmorResource(entity, itemstack, slotType, null));
-					this.renderModel(transform, buffer, uv2, foil, model, 1.0F, 1.0F, 1.0F, this.getArmorResource(entity, itemstack, slotType, "overlay"));
+					this.renderModel(transform, buffer, uv2, armoritem, model, inner, r, g, b, this.getArmorResource(entity, itemstack, slotType, null));
+					this.renderModel(transform, buffer, uv2, armoritem, model, inner, 1.0F, 1.0F, 1.0F, this.getArmorResource(entity, itemstack, slotType, "overlay"));
 				} else {
-					this.renderModel(transform, buffer, uv2, foil, model, 1.0F, 1.0F, 1.0F, this.getArmorResource(entity, itemstack, slotType, null));
+					this.renderModel(transform, buffer, uv2, armoritem, model, inner, 1.0F, 1.0F, 1.0F, this.getArmorResource(entity, itemstack, slotType, null));
 				}
-
+				
+				ArmorTrim.getTrim(entity.level().registryAccess(), itemstack).ifPresent(trim ->
+						this.renderTrim(armoritem.getMaterial(), transform, buffer, uv2, trim, model, inner));
+				if (itemstack.hasFoil()) {
+					this.renderGlint(transform, buffer, uv2, model);
+				}
 			}
 		}
 	}
@@ -84,10 +96,21 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 			case FEET -> model.setLegsVisible(true);
 		}
 	}
-
-	private void renderModel(PoseStack transform, MultiBufferSource buffer, int uv2, boolean foil, A model, float r, float g, float b, ResourceLocation armorResource) {
-		VertexConsumer vertexConsumer = ItemRenderer.getArmorFoilBuffer(buffer, RenderType.armorCutoutNoCull(armorResource), false, foil);
-		model.renderModelToBuffer(transform, vertexConsumer, uv2, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F);
+	
+	@SuppressWarnings("unused")
+	private void renderModel(PoseStack transform, MultiBufferSource multiBufferSource, int uv2, ArmorItem armorItem, Model model, boolean inner, float r, float g, float b, ResourceLocation armorResource) {
+		VertexConsumer vertexconsumer = multiBufferSource.getBuffer(RenderType.armorCutoutNoCull(armorResource));
+		model.renderToBuffer(transform, vertexconsumer, uv2, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F);
+	}
+	
+	private void renderTrim(ArmorMaterial armorMaterial, PoseStack transform, MultiBufferSource multiBufferSource, int uv2, ArmorTrim trim, Model model, boolean inner) {
+		TextureAtlasSprite textureatlassprite = this.armorTrimAtlas.getSprite(inner ? trim.innerTexture(armorMaterial) : trim.outerTexture(armorMaterial));
+		VertexConsumer vertexconsumer = textureatlassprite.wrap(multiBufferSource.getBuffer(Sheets.armorTrimsSheet()));
+		model.renderToBuffer(transform, vertexconsumer, uv2, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+	}
+	
+	private void renderGlint(PoseStack transform, MultiBufferSource multiBufferSource, int uv2, Model model) {
+		model.renderToBuffer(transform, multiBufferSource.getBuffer(RenderType.armorEntityGlint()), uv2, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
 	}
 
 	private A getArmorModel(EquipmentSlot slotType) {

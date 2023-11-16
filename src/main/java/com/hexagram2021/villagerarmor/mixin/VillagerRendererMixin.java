@@ -26,5 +26,5 @@ public class VillagerRendererMixin {
 	}
 }
 /*
-/summon minecraft:villager ~ ~ ~ {ArmorItems: [{id: "iron_boots", Count: 1}, {id: "golden_leggings", Count: 1}, {id: "diamond_chestplate", Count: 1}, {id: "turtle_helmet", Count: 1}]}
+/summon minecraft:villager ~ ~ ~ {ArmorItems: [{id: "iron_boots", Count: 1, tag: {Trim: {material: "amethyst", pattern: "coast"}}}, {id: "golden_leggings", Count: 1, tag: {Trim: {material: "redstone", pattern: "host"}}}, {id: "diamond_chestplate", Count: 1, tag: {Trim: {material: "gold", pattern: "silence"}}}, {id: "turtle_helmet", Count: 1, tag: {Trim: {material: "iron", pattern: "eye"}}}]}
  */

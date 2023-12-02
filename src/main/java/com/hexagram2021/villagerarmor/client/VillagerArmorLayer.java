@@ -69,7 +69,7 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 					this.renderModel(transform, buffer, uv2, armoritem, model, inner, 1.0F, 1.0F, 1.0F, this.getArmorResource(entity, itemstack, slotType, null));
 				}
 				
-				ArmorTrim.getTrim(entity.level().registryAccess(), itemstack).ifPresent(trim ->
+				ArmorTrim.getTrim(entity.level().registryAccess(), itemstack, true).ifPresent(trim ->
 						this.renderTrim(armoritem.getMaterial(), transform, buffer, uv2, trim, model, inner));
 				if (itemstack.hasFoil()) {
 					this.renderGlint(transform, buffer, uv2, model);
@@ -105,7 +105,7 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 	
 	private void renderTrim(ArmorMaterial armorMaterial, PoseStack transform, MultiBufferSource multiBufferSource, int uv2, ArmorTrim trim, Model model, boolean inner) {
 		TextureAtlasSprite textureatlassprite = this.armorTrimAtlas.getSprite(inner ? trim.innerTexture(armorMaterial) : trim.outerTexture(armorMaterial));
-		VertexConsumer vertexconsumer = textureatlassprite.wrap(multiBufferSource.getBuffer(Sheets.armorTrimsSheet()));
+		VertexConsumer vertexconsumer = textureatlassprite.wrap(multiBufferSource.getBuffer(Sheets.armorTrimsSheet(trim.pattern().value().decal())));
 		model.renderToBuffer(transform, vertexconsumer, uv2, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
 	}
 	

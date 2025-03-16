@@ -1,8 +1,7 @@
 package com.hexagram2021.villagerarmor;
 
 import com.hexagram2021.villagerarmor.utils.VALLogger;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 
 @SuppressWarnings("unused")
@@ -14,7 +13,5 @@ public class VillagerArmor {
 
 	public VillagerArmor() {
 		VALLogger.logger = LogManager.getLogger(MODID);
-
-		MinecraftForge.EVENT_BUS.register(this);
 	}
 }

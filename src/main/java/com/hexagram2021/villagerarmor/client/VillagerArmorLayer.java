@@ -24,7 +24,7 @@ import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.ArmorTrim;
-import net.minecraftforge.client.ForgeHooksClient;
+import net.neoforged.neoforge.client.ClientHooks;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -121,7 +121,6 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 		return slotType == EquipmentSlot.LEGS;
 	}
 
-	@SuppressWarnings("UnstableApiUsage")
 	public ResourceLocation getArmorResource(Entity entity, ItemStack stack, EquipmentSlot slot, @Nullable String type) {
 		ArmorItem item = (ArmorItem)stack.getItem();
 		String texture = item.getMaterial().getName();
@@ -133,7 +132,7 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 		}
 		String s1 = String.format("%s:textures/models/armor/%s_layer_%d%s.png", domain, texture, (usesInnerModel(slot) ? 2 : 1), type == null ? "" : String.format("_%s", type));
 
-		s1 = ForgeHooksClient.getArmorTexture(entity, stack, s1, slot, type);
+		s1 = ClientHooks.getArmorTexture(entity, stack, s1, slot, type);
 		ResourceLocation resourcelocation = ARMOR_LOCATION_CACHE.get(s1);
 
 		if (resourcelocation == null) {

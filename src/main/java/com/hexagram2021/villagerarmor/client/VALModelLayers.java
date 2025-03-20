@@ -34,7 +34,7 @@ public class VALModelLayers {
 	}
 	
 	private static ModelLayerLocation register(String name, String layer) {
-		return new ModelLayerLocation(new ResourceLocation(MODID, name), layer);
+		return new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(MODID, name), layer);
 	}
 	
 	@SubscribeEvent

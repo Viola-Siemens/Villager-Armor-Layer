@@ -107,8 +107,8 @@ public class IronGolemArmorModel extends HierarchicalModel<IronGolem> implements
 	}
 
 	@Override
-	public void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, float r, float g, float b, float a) {
-		this.renderToBuffer(transform, builder, uv2, overlayType, r, g, b, a);
+	public void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, int rgba) {
+		this.renderToBuffer(transform, builder, uv2, overlayType, rgba);
 	}
 
 	@Override

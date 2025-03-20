@@ -3,6 +3,7 @@ package com.hexagram2021.villagerarmor.utils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
+@SuppressWarnings("unused")
 public class VALLogger {
 	public static final boolean debugMode = true;
 	
@@ -11,6 +12,9 @@ public class VALLogger {
 
 	public static void log(Level logLevel, Object object) {
 		logger.log(logLevel, String.valueOf(object));
+	}
+	public static void log(Level logLevel, Object message, Throwable t) {
+		logger.log(logLevel, message, t);
 	}
 
 	public static void error(Object object) {
@@ -23,6 +27,18 @@ public class VALLogger {
 
 	public static void warn(Object object) {
 		log(Level.WARN, object);
+	}
+
+	public static void error(Object object, Throwable t) {
+		log(Level.ERROR, object, t);
+	}
+
+	public static void info(Object object, Throwable t) {
+		log(Level.INFO, object, t);
+	}
+
+	public static void warn(Object object, Throwable t) {
+		log(Level.WARN, object, t);
 	}
 
 	public static void error(String message, Object... params) {

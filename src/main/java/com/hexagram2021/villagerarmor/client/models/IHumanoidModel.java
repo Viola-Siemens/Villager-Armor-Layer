@@ -25,5 +25,5 @@ public interface IHumanoidModel {
 
 	<E extends Entity> void propertiesCopyFrom(EntityModel<E> model);
 
-	void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, float r, float g, float b, float a);
+	void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, int rgba);
 }

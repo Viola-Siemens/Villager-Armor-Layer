@@ -1,6 +1,7 @@
 package com.hexagram2021.villagerarmor.client;
 
 import com.hexagram2021.villagerarmor.client.models.IHumanoidModel;
+import com.hexagram2021.villagerarmor.utils.VALLogger;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HierarchicalModel;
@@ -27,6 +28,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalModel<T>, A extends HierarchicalModel<T> & IHumanoidModel> extends RenderLayer<T, M> {
 	private final A innerModel;
@@ -41,14 +43,16 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 	}
 
 	@Override
-	public void render(PoseStack transform, MultiBufferSource buffer, int uv2, T entity, float f1, float f2, float ticks, float f3, float f4, float xRot) {
-		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.CHEST, uv2, this.getArmorModel(EquipmentSlot.CHEST));
-		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.LEGS, uv2, this.getArmorModel(EquipmentSlot.LEGS));
-		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.FEET, uv2, this.getArmorModel(EquipmentSlot.FEET));
-		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.HEAD, uv2, this.getArmorModel(EquipmentSlot.HEAD));
+	public void render(PoseStack transform, MultiBufferSource buffer, int uv2, T entity, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
+		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.CHEST, uv2, this.getArmorModel(EquipmentSlot.CHEST), limbSwing, limbSwingAmount, partialTick, ageInTicks, netHeadYaw, headPitch);
+		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.LEGS, uv2, this.getArmorModel(EquipmentSlot.LEGS), limbSwing, limbSwingAmount, partialTick, ageInTicks, netHeadYaw, headPitch);
+		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.FEET, uv2, this.getArmorModel(EquipmentSlot.FEET), limbSwing, limbSwingAmount, partialTick, ageInTicks, netHeadYaw, headPitch);
+		this.renderArmorPiece(transform, buffer, entity, EquipmentSlot.HEAD, uv2, this.getArmorModel(EquipmentSlot.HEAD), limbSwing, limbSwingAmount, partialTick, ageInTicks, netHeadYaw, headPitch);
 	}
 
-	private void renderArmorPiece(PoseStack transform, MultiBufferSource buffer, T entity, EquipmentSlot slotType, int uv2, A model) {
+	private static boolean WARN_NEOFORGE_UNDER_21_1_18 = false;
+	private void renderArmorPiece(PoseStack transform, MultiBufferSource buffer, T entity, EquipmentSlot slotType, int uv2, A model,
+								  float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
 		ItemStack itemstack = entity.getItemBySlot(slotType);
 		if (itemstack.getItem() instanceof ArmorItem armoritem) {
 			if (armoritem.getEquipmentSlot() == slotType) {
@@ -58,24 +62,28 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 				boolean inner = this.usesInnerModel(slotType);
 
 				ArmorMaterial armormaterial = armoritem.getMaterial().value();
-				int i = itemstack.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(itemstack, -6265536) : -1;
-
-				for (ArmorMaterial.Layer armormaterial$layer : armormaterial.layers()) {
-					float r;
-					float g;
-					float b;
-					if (armormaterial$layer.dyeable() && i != -1) {
-						r = (float) FastColor.ARGB32.red(i) / 255.0F;
-						g = (float)FastColor.ARGB32.green(i) / 255.0F;
-						b = (float)FastColor.ARGB32.blue(i) / 255.0F;
-					} else {
-						r = 1.0F;
-						g = 1.0F;
-						b = 1.0F;
+				try {
+					IClientItemExtensions extensions = IClientItemExtensions.of(itemstack);
+					extensions.setupModelAnimations(entity, itemstack, slotType, model, limbSwing, limbSwingAmount, partialTick, ageInTicks, netHeadYaw, headPitch);
+					int fallbackColor = extensions.getDefaultDyeColor(itemstack);
+					for (int layerIdx = 0; layerIdx < armormaterial.layers().size(); layerIdx++) {
+						ArmorMaterial.Layer armormaterial$layer = armormaterial.layers().get(layerIdx);
+						int rgba = extensions.getArmorLayerTintColor(itemstack, entity, armormaterial$layer, layerIdx, fallbackColor);
+						if (rgba != 0) {
+							ResourceLocation texture = ClientHooks.getArmorTexture(entity, itemstack, armormaterial$layer, inner, slotType);
+							this.renderModel(transform, buffer, uv2, model, rgba, texture);
+						}
 					}
-
-					ResourceLocation texture = ClientHooks.getArmorTexture(entity, itemstack, armormaterial$layer, inner, slotType);
-					this.renderModel(transform, buffer, uv2, model, r, g, b, texture);
+				} catch (NoSuchMethodError e) {
+					if(!WARN_NEOFORGE_UNDER_21_1_18) {
+						VALLogger.warn("Using neoforge before 21.1.18, disabling per-render-layer armor coloring feature and using legacy method.", e);
+						WARN_NEOFORGE_UNDER_21_1_18 = true;
+					}
+					int i = itemstack.is(ItemTags.DYEABLE) ? FastColor.ARGB32.opaque(DyedItemColor.getOrDefault(itemstack, DyedItemColor.LEATHER_COLOR)) : 0xffffffff;
+					for (ArmorMaterial.Layer layer : armormaterial.layers()) {
+						int rgba = layer.dyeable() ? i : 0xffffffff;
+						this.renderModel(transform, buffer, uv2, model, rgba, layer.texture(inner));
+					}
 				}
 
 				ArmorTrim armortrim = itemstack.get(DataComponents.TRIM);
@@ -108,19 +116,19 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 		}
 	}
 
-	private void renderModel(PoseStack transform, MultiBufferSource multiBufferSource, int uv2, Model model, float r, float g, float b, ResourceLocation armorResource) {
+	private void renderModel(PoseStack transform, MultiBufferSource multiBufferSource, int uv2, Model model, int rgba, ResourceLocation armorResource) {
 		VertexConsumer vertexconsumer = multiBufferSource.getBuffer(RenderType.armorCutoutNoCull(armorResource));
-		model.renderToBuffer(transform, vertexconsumer, uv2, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F);
+		model.renderToBuffer(transform, vertexconsumer, uv2, OverlayTexture.NO_OVERLAY, rgba);
 	}
 	
 	private void renderTrim(Holder<ArmorMaterial> armorMaterial, PoseStack transform, MultiBufferSource multiBufferSource, int uv2, ArmorTrim trim, Model model, boolean inner) {
 		TextureAtlasSprite textureatlassprite = this.armorTrimAtlas.getSprite(inner ? trim.innerTexture(armorMaterial) : trim.outerTexture(armorMaterial));
 		VertexConsumer vertexconsumer = textureatlassprite.wrap(multiBufferSource.getBuffer(Sheets.armorTrimsSheet(trim.pattern().value().decal())));
-		model.renderToBuffer(transform, vertexconsumer, uv2, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+		model.renderToBuffer(transform, vertexconsumer, uv2, OverlayTexture.NO_OVERLAY, 0xffffffff);
 	}
 	
 	private void renderGlint(PoseStack transform, MultiBufferSource multiBufferSource, int uv2, Model model) {
-		model.renderToBuffer(transform, multiBufferSource.getBuffer(RenderType.armorEntityGlint()), uv2, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+		model.renderToBuffer(transform, multiBufferSource.getBuffer(RenderType.armorEntityGlint()), uv2, OverlayTexture.NO_OVERLAY, 0xffffffff);
 	}
 
 	private A getArmorModel(EquipmentSlot slotType) {

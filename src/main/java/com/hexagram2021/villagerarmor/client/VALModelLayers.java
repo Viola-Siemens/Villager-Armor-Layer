@@ -9,12 +9,12 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 import static com.hexagram2021.villagerarmor.VillagerArmor.MODID;
 
-@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class VALModelLayers {
 	public static final ModelLayerLocation VILLAGER_INNER_ARMOR = registerInnerArmor("villager");
 	public static final ModelLayerLocation VILLAGER_OUTER_ARMOR = registerOuterArmor("villager");

@@ -1,6 +1,5 @@
 package com.hexagram2021.villagerarmor.client;
 
-import com.google.common.collect.Maps;
 import com.hexagram2021.villagerarmor.client.models.IHumanoidModel;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -15,22 +14,21 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.ArmorTrim;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.neoforged.neoforge.client.ClientHooks;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-
 public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalModel<T>, A extends HierarchicalModel<T> & IHumanoidModel> extends RenderLayer<T, M> {
-	private static final Map<String, ResourceLocation> ARMOR_LOCATION_CACHE = Maps.newHashMap();
 	private final A innerModel;
 	private final A outerModel;
 	private final TextureAtlas armorTrimAtlas;
@@ -58,19 +56,32 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 				this.setPartVisibility(model, slotType);
 				model.afterSetPartVisibility(this.getParentModel());
 				boolean inner = this.usesInnerModel(slotType);
-				if (armoritem instanceof DyeableLeatherItem leatherItem) {
-					int i = leatherItem.getColor(itemstack);
-					float r = (float)(i >> 16 & 255) / 255.0F;
-					float g = (float)(i >> 8 & 255) / 255.0F;
-					float b = (float)(i & 255) / 255.0F;
-					this.renderModel(transform, buffer, uv2, armoritem, model, inner, r, g, b, this.getArmorResource(entity, itemstack, slotType, null));
-					this.renderModel(transform, buffer, uv2, armoritem, model, inner, 1.0F, 1.0F, 1.0F, this.getArmorResource(entity, itemstack, slotType, "overlay"));
-				} else {
-					this.renderModel(transform, buffer, uv2, armoritem, model, inner, 1.0F, 1.0F, 1.0F, this.getArmorResource(entity, itemstack, slotType, null));
+
+				ArmorMaterial armormaterial = armoritem.getMaterial().value();
+				int i = itemstack.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(itemstack, -6265536) : -1;
+
+				for (ArmorMaterial.Layer armormaterial$layer : armormaterial.layers()) {
+					float r;
+					float g;
+					float b;
+					if (armormaterial$layer.dyeable() && i != -1) {
+						r = (float) FastColor.ARGB32.red(i) / 255.0F;
+						g = (float)FastColor.ARGB32.green(i) / 255.0F;
+						b = (float)FastColor.ARGB32.blue(i) / 255.0F;
+					} else {
+						r = 1.0F;
+						g = 1.0F;
+						b = 1.0F;
+					}
+
+					ResourceLocation texture = ClientHooks.getArmorTexture(entity, itemstack, armormaterial$layer, inner, slotType);
+					this.renderModel(transform, buffer, uv2, model, r, g, b, texture);
 				}
-				
-				ArmorTrim.getTrim(entity.level().registryAccess(), itemstack, true).ifPresent(trim ->
-						this.renderTrim(armoritem.getMaterial(), transform, buffer, uv2, trim, model, inner));
+
+				ArmorTrim armortrim = itemstack.get(DataComponents.TRIM);
+				if (armortrim != null) {
+					this.renderTrim(armoritem.getMaterial(), transform, buffer, uv2, armortrim, model, inner);
+				}
 				if (itemstack.hasFoil()) {
 					this.renderGlint(transform, buffer, uv2, model);
 				}
@@ -96,14 +107,13 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 			case FEET -> model.setLegsVisible(true);
 		}
 	}
-	
-	@SuppressWarnings("unused")
-	private void renderModel(PoseStack transform, MultiBufferSource multiBufferSource, int uv2, ArmorItem armorItem, Model model, boolean inner, float r, float g, float b, ResourceLocation armorResource) {
+
+	private void renderModel(PoseStack transform, MultiBufferSource multiBufferSource, int uv2, Model model, float r, float g, float b, ResourceLocation armorResource) {
 		VertexConsumer vertexconsumer = multiBufferSource.getBuffer(RenderType.armorCutoutNoCull(armorResource));
 		model.renderToBuffer(transform, vertexconsumer, uv2, OverlayTexture.NO_OVERLAY, r, g, b, 1.0F);
 	}
 	
-	private void renderTrim(ArmorMaterial armorMaterial, PoseStack transform, MultiBufferSource multiBufferSource, int uv2, ArmorTrim trim, Model model, boolean inner) {
+	private void renderTrim(Holder<ArmorMaterial> armorMaterial, PoseStack transform, MultiBufferSource multiBufferSource, int uv2, ArmorTrim trim, Model model, boolean inner) {
 		TextureAtlasSprite textureatlassprite = this.armorTrimAtlas.getSprite(inner ? trim.innerTexture(armorMaterial) : trim.outerTexture(armorMaterial));
 		VertexConsumer vertexconsumer = textureatlassprite.wrap(multiBufferSource.getBuffer(Sheets.armorTrimsSheet(trim.pattern().value().decal())));
 		model.renderToBuffer(transform, vertexconsumer, uv2, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
@@ -119,27 +129,5 @@ public class VillagerArmorLayer<T extends LivingEntity, M extends HierarchicalMo
 
 	private boolean usesInnerModel(EquipmentSlot slotType) {
 		return slotType == EquipmentSlot.LEGS;
-	}
-
-	public ResourceLocation getArmorResource(Entity entity, ItemStack stack, EquipmentSlot slot, @Nullable String type) {
-		ArmorItem item = (ArmorItem)stack.getItem();
-		String texture = item.getMaterial().getName();
-		String domain = "minecraft";
-		int idx = texture.indexOf(':');
-		if (idx != -1) {
-			domain = texture.substring(0, idx);
-			texture = texture.substring(idx + 1);
-		}
-		String s1 = String.format("%s:textures/models/armor/%s_layer_%d%s.png", domain, texture, (usesInnerModel(slot) ? 2 : 1), type == null ? "" : String.format("_%s", type));
-
-		s1 = ClientHooks.getArmorTexture(entity, stack, s1, slot, type);
-		ResourceLocation resourcelocation = ARMOR_LOCATION_CACHE.get(s1);
-
-		if (resourcelocation == null) {
-			resourcelocation = new ResourceLocation(s1);
-			ARMOR_LOCATION_CACHE.put(s1, resourcelocation);
-		}
-
-		return resourcelocation;
 	}
 }

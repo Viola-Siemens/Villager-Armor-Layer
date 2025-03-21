@@ -5,10 +5,14 @@
   "refmap": "villagerarmor.refmap.json",
   "minVersion": "0.8",
   "client": [
-	"IllagerRendererMixin",
-	"IronGolemRendererMixin",
-	"VillagerRendererMixin",
-	"WanderingTraderRendererMixin",
-	"WitchRendererMixin"
+    "renderer.IllagerRendererMixin",
+    "renderer.IronGolemRendererMixin",
+    "renderer.VillagerRendererMixin",
+    "renderer.WanderingTraderRendererMixin",
+    "renderer.WitchRendererMixin",
+    "state.IllagerRenderStateMixin",
+    "state.IronGolemRenderStateMixin",
+    "state.VillagerRenderStateMixin",
+    "state.WitchRenderStateMixin"
   ]
 }

@@ -1,20 +1,16 @@
 package com.hexagram2021.villagerarmor.client.models;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.VillagerHeadModel;
 import net.minecraft.client.model.VillagerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.npc.AbstractVillager;
 
-public class VillagerArmorModel<T extends AbstractVillager> extends HierarchicalModel<T> implements IHumanoidModel, VillagerHeadModel {
-	protected final ModelPart root;
+public class VillagerArmorModel<S extends VillagerRenderState> extends EntityModel<S> implements IHumanoidModel, VillagerHeadModel {
 	protected final ModelPart head;
 	protected final ModelPart body;
 	protected final ModelPart arms;
@@ -22,7 +18,7 @@ public class VillagerArmorModel<T extends AbstractVillager> extends Hierarchical
 	protected final ModelPart rightLeg;
 	
 	public VillagerArmorModel(ModelPart root) {
-		this.root = root;
+		super(root);
 		this.head = root.getChild("head");
 		this.body = root.getChild("body");
 		this.arms = root.getChild("arms");
@@ -78,8 +74,7 @@ public class VillagerArmorModel<T extends AbstractVillager> extends Hierarchical
 	}
 
 	@SuppressWarnings("unused")
-	public void copyPropertiesTo(VillagerArmorModel<T> model) {
-		super.copyPropertiesTo(model);
+	public void copyPropertiesTo(VillagerArmorModel<S> model) {
 		model.head.copyFrom(this.head);
 		model.body.copyFrom(this.body);
 		model.arms.copyFrom(this.arms);
@@ -88,22 +83,14 @@ public class VillagerArmorModel<T extends AbstractVillager> extends Hierarchical
 	}
 
 	@Override
-	public <E extends Entity> void propertiesCopyFrom(EntityModel<E> model) {
-		this.attackTime = model.attackTime;
-		this.riding = model.riding;
-		this.young = model.young;
-		if(model instanceof VillagerModel<?> villagerModel) {
+	public <E extends EntityRenderState> void propertiesCopyFrom(EntityModel<E> model) {
+		if(model instanceof VillagerModel villagerModel) {
 			this.head.copyFrom(villagerModel.head);
-			this.body.copyFrom(villagerModel.root.getChild("body"));
-			this.arms.copyFrom(villagerModel.root.getChild("arms"));
+			this.body.copyFrom(villagerModel.root().getChild("body"));
+			this.arms.copyFrom(villagerModel.root().getChild("arms"));
 			this.rightLeg.copyFrom(villagerModel.rightLeg);
 			this.leftLeg.copyFrom(villagerModel.leftLeg);
 		}
-	}
-
-	@Override
-	public void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, int rgba) {
-		this.renderToBuffer(transform, builder, uv2, overlayType, rgba);
 	}
 
 	@Override
@@ -112,26 +99,19 @@ public class VillagerArmorModel<T extends AbstractVillager> extends Hierarchical
 	}
 
 	@Override
-	public ModelPart root() {
-		return this.root;
-	}
-
-	@Override
-	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-		this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
-		this.head.xRot = headPitch * ((float)Math.PI / 180F);
-		if (entity.getUnhappyCounter() > 0) {
-			this.head.zRot = 0.3F * Mth.sin(0.45F * ageInTicks);
+	public void setupAnim(S state) {
+		super.setupAnim(state);
+		this.head.yRot = state.yRot * (float) (Math.PI / 180.0);
+		this.head.xRot = state.xRot * (float) (Math.PI / 180.0);
+		if (state.isUnhappy) {
+			this.head.zRot = 0.3F * Mth.sin(0.45F * state.ageInTicks);
 			this.head.xRot = 0.4F;
 		} else {
 			this.head.zRot = 0.0F;
 		}
 
-		this.arms.y = 3.0F;
-		this.arms.z = -1.0F;
-		this.arms.xRot = -0.75F;
-		this.rightLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-		this.leftLeg.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+		this.rightLeg.xRot = Mth.cos(state.walkAnimationPos * 0.6662F) * 1.4F * state.walkAnimationSpeed * 0.5F;
+		this.leftLeg.xRot = Mth.cos(state.walkAnimationPos * 0.6662F + (float) Math.PI) * 1.4F * state.walkAnimationSpeed * 0.5F;
 		this.rightLeg.yRot = 0.0F;
 		this.leftLeg.yRot = 0.0F;
 	}

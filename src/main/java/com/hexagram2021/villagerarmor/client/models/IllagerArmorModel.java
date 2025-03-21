@@ -1,17 +1,15 @@
 package com.hexagram2021.villagerarmor.client.models;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.*;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.IllagerRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.AbstractIllager;
 
-public class IllagerArmorModel<T extends AbstractIllager> extends HierarchicalModel<T> implements IHumanoidModel, VillagerHeadModel {
-	protected final ModelPart root;
+public class IllagerArmorModel<S extends IllagerRenderState> extends EntityModel<S> implements IHumanoidModel, VillagerHeadModel {
 	protected final ModelPart head;
 	protected final ModelPart body;
 	protected final ModelPart leftLeg;
@@ -21,7 +19,7 @@ public class IllagerArmorModel<T extends AbstractIllager> extends HierarchicalMo
 	protected final ModelPart rightArm;
 
 	public IllagerArmorModel(ModelPart root) {
-		this.root = root;
+		super(root);
 		this.head = root.getChild("head");
 		this.body = root.getChild("body");
 		this.rightArm = root.getChild("right_arm");
@@ -85,8 +83,7 @@ public class IllagerArmorModel<T extends AbstractIllager> extends HierarchicalMo
 	}
 
 	@SuppressWarnings("unused")
-	public void copyPropertiesTo(IllagerArmorModel<T> model) {
-		super.copyPropertiesTo(model);
+	public void copyPropertiesTo(IllagerArmorModel<S> model) {
 		model.head.copyFrom(this.head);
 		model.body.copyFrom(this.body);
 		model.rightArm.copyFrom(this.rightArm);
@@ -97,13 +94,10 @@ public class IllagerArmorModel<T extends AbstractIllager> extends HierarchicalMo
 	}
 
 	@Override
-	public <E extends Entity> void propertiesCopyFrom(EntityModel<E> model) {
-		this.attackTime = model.attackTime;
-		this.riding = model.riding;
-		this.young = model.young;
+	public <E extends EntityRenderState> void propertiesCopyFrom(EntityModel<E> model) {
 		if(model instanceof IllagerModel<?> illagerModel) {
 			this.head.copyFrom(illagerModel.head);
-			this.body.copyFrom(illagerModel.root.getChild("body"));
+			this.body.copyFrom(illagerModel.root().getChild("body"));
 			this.rightArm.copyFrom(illagerModel.rightArm);
 			this.leftArm.copyFrom(illagerModel.leftArm);
 			this.arms.copyFrom(illagerModel.arms);
@@ -113,7 +107,7 @@ public class IllagerArmorModel<T extends AbstractIllager> extends HierarchicalMo
 	}
 
 	@Override
-	public <E extends Entity> void afterSetPartVisibility(EntityModel<E> model) {
+	public <E extends EntityRenderState> void afterSetPartVisibility(EntityModel<E> model) {
 		if(model instanceof IllagerModel<?> illagerModel) {
 			this.rightArm.visible &= illagerModel.rightArm.visible;
 			this.leftArm.visible &= illagerModel.leftArm.visible;
@@ -122,28 +116,19 @@ public class IllagerArmorModel<T extends AbstractIllager> extends HierarchicalMo
 	}
 
 	@Override
-	public void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, int rgba) {
-		this.renderToBuffer(transform, builder, uv2, overlayType, rgba);
-	}
-
-	@Override
 	public void hatVisible(boolean visible) {
 		this.head.visible = visible;
 	}
 
 	@Override
-	public ModelPart root() {
-		return this.root;
-	}
-
-	@Override
-	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-		this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
-		this.head.xRot = headPitch * ((float)Math.PI / 180F);
+	public void setupAnim(S state) {
+		super.setupAnim(state);
+		this.head.yRot = state.yRot * ((float)Math.PI / 180F);
+		this.head.xRot = state.xRot * ((float)Math.PI / 180F);
 		this.arms.y = 3.0F;
 		this.arms.z = -1.0F;
 		this.arms.xRot = -0.75F;
-		if (this.riding) {
+		if (state.isRiding) {
 			this.rightArm.xRot = (-(float)Math.PI / 5F);
 			this.rightArm.yRot = 0.0F;
 			this.rightArm.zRot = 0.0F;
@@ -157,58 +142,58 @@ public class IllagerArmorModel<T extends AbstractIllager> extends HierarchicalMo
 			this.rightLeg.yRot = (-(float)Math.PI / 10F);
 			this.rightLeg.zRot = -0.07853982F;
 		} else {
-			this.rightArm.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 2.0F * limbSwingAmount * 0.5F;
+			this.rightArm.xRot = Mth.cos(state.walkAnimationPos * 0.6662F + (float)Math.PI) * 2.0F * state.walkAnimationSpeed * 0.5F;
 			this.rightArm.yRot = 0.0F;
 			this.rightArm.zRot = 0.0F;
-			this.leftArm.xRot = Mth.cos(limbSwing * 0.6662F) * 2.0F * limbSwingAmount * 0.5F;
+			this.leftArm.xRot = Mth.cos(state.walkAnimationPos * 0.6662F) * 2.0F * state.walkAnimationSpeed * 0.5F;
 			this.leftArm.yRot = 0.0F;
 			this.leftArm.zRot = 0.0F;
-			this.leftLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
+			this.leftLeg.xRot = Mth.cos(state.walkAnimationPos * 0.6662F) * 1.4F * state.walkAnimationSpeed * 0.5F;
 			this.leftLeg.yRot = 0.0F;
 			this.leftLeg.zRot = 0.0F;
-			this.rightLeg.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+			this.rightLeg.xRot = Mth.cos(state.walkAnimationPos * 0.6662F + (float)Math.PI) * 1.4F * state.walkAnimationSpeed * 0.5F;
 			this.rightLeg.yRot = 0.0F;
 			this.rightLeg.zRot = 0.0F;
 		}
 
-		AbstractIllager.IllagerArmPose armPose = entity.getArmPose();
+		AbstractIllager.IllagerArmPose armPose = state.armPose;
 		if (armPose == AbstractIllager.IllagerArmPose.ATTACKING) {
-			if (entity.getMainHandItem().isEmpty()) {
-				AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, true, this.attackTime, ageInTicks);
+			if (state.getMainHandItem().isEmpty()) {
+				AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, true, state.attackAnim, state.ageInTicks);
 			} else {
-				AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, entity, this.attackTime, ageInTicks);
+				AnimationUtils.swingWeaponDown(this.rightArm, this.leftArm, state.mainArm, state.attackAnim, state.ageInTicks);
 			}
 		} else if (armPose == AbstractIllager.IllagerArmPose.SPELLCASTING) {
 			this.rightArm.z = 0.0F;
 			this.rightArm.x = -5.0F;
 			this.leftArm.z = 0.0F;
 			this.leftArm.x = 5.0F;
-			this.rightArm.xRot = Mth.cos(ageInTicks * 0.6662F) * 0.25F;
-			this.leftArm.xRot = Mth.cos(ageInTicks * 0.6662F) * 0.25F;
-			this.rightArm.zRot = 2.3561945F;
-			this.leftArm.zRot = -2.3561945F;
+			this.rightArm.xRot = Mth.cos(state.ageInTicks * 0.6662F) * 0.25F;
+			this.leftArm.xRot = Mth.cos(state.ageInTicks * 0.6662F) * 0.25F;
+			this.rightArm.zRot = (float) (Math.PI * 0.75D);
+			this.leftArm.zRot = (float) (-Math.PI * 0.75D);
 			this.rightArm.yRot = 0.0F;
 			this.leftArm.yRot = 0.0F;
 		} else if (armPose == AbstractIllager.IllagerArmPose.BOW_AND_ARROW) {
 			this.rightArm.yRot = -0.1F + this.head.yRot;
 			this.rightArm.xRot = (-(float)Math.PI / 2F) + this.head.xRot;
-			this.leftArm.xRot = -0.9424779F + this.head.xRot;
+			this.leftArm.xRot = (float) (-Math.PI * 0.3D) + this.head.xRot;
 			this.leftArm.yRot = this.head.yRot - 0.4F;
 			this.leftArm.zRot = ((float)Math.PI / 2F);
 		} else if (armPose == AbstractIllager.IllagerArmPose.CROSSBOW_HOLD) {
 			AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, true);
 		} else if (armPose == AbstractIllager.IllagerArmPose.CROSSBOW_CHARGE) {
-			AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, entity, true);
+			AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, state.maxCrossbowChargeDuration, state.ticksUsingItem, true);
 		} else if (armPose == AbstractIllager.IllagerArmPose.CELEBRATING) {
 			this.rightArm.z = 0.0F;
 			this.rightArm.x = -5.0F;
-			this.rightArm.xRot = Mth.cos(ageInTicks * 0.6662F) * 0.05F;
-			this.rightArm.zRot = 2.670354F;
+			this.rightArm.xRot = Mth.cos(state.ageInTicks * 0.6662F) * 0.05F;
+			this.rightArm.zRot = (float) (Math.PI * 0.85D);
 			this.rightArm.yRot = 0.0F;
 			this.leftArm.z = 0.0F;
 			this.leftArm.x = 5.0F;
-			this.leftArm.xRot = Mth.cos(ageInTicks * 0.6662F) * 0.05F;
-			this.leftArm.zRot = -2.3561945F;
+			this.leftArm.xRot = Mth.cos(state.ageInTicks * 0.6662F) * 0.05F;
+			this.leftArm.zRot = (float) (-Math.PI * 0.75D);
 			this.leftArm.yRot = 0.0F;
 		}
 

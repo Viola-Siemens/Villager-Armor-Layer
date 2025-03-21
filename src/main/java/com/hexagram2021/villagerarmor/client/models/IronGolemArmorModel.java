@@ -1,19 +1,15 @@
 package com.hexagram2021.villagerarmor.client.models;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.IronGolemModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.IronGolem;
 
-public class IronGolemArmorModel extends HierarchicalModel<IronGolem> implements IHumanoidModel {
-	protected final ModelPart root;
+public class IronGolemArmorModel<S extends IronGolemRenderState> extends EntityModel<S> implements IHumanoidModel {
 	protected final ModelPart head;
 	protected final ModelPart body;
 	protected final ModelPart leftArm;
@@ -22,7 +18,7 @@ public class IronGolemArmorModel extends HierarchicalModel<IronGolem> implements
 	protected final ModelPart rightLeg;
 	
 	public IronGolemArmorModel(ModelPart root) {
-		this.root = root;
+		super(root);
 		this.head = root.getChild("head");
 		this.body = root.getChild("body");
 		this.rightArm = root.getChild("right_arm");
@@ -81,8 +77,7 @@ public class IronGolemArmorModel extends HierarchicalModel<IronGolem> implements
 	}
 
 	@SuppressWarnings("unused")
-	public void copyPropertiesTo(IronGolemArmorModel model) {
-		super.copyPropertiesTo(model);
+	public void copyPropertiesTo(IronGolemArmorModel<S> model) {
 		model.head.copyFrom(this.head);
 		model.body.copyFrom(this.body);
 		model.rightArm.copyFrom(this.rightArm);
@@ -92,13 +87,10 @@ public class IronGolemArmorModel extends HierarchicalModel<IronGolem> implements
 	}
 
 	@Override
-	public <E extends Entity> void propertiesCopyFrom(EntityModel<E> model) {
-		this.attackTime = model.attackTime;
-		this.riding = model.riding;
-		this.young = model.young;
-		if(model instanceof IronGolemModel<?> ironGolemModel) {
+	public <E extends EntityRenderState> void propertiesCopyFrom(EntityModel<E> model) {
+		if(model instanceof IronGolemModel ironGolemModel) {
 			this.head.copyFrom(ironGolemModel.head);
-			this.body.copyFrom(ironGolemModel.root.getChild("body"));
+			this.body.copyFrom(ironGolemModel.root().getChild("body"));
 			this.rightArm.copyFrom(ironGolemModel.rightArm);
 			this.leftArm.copyFrom(ironGolemModel.leftArm);
 			this.rightLeg.copyFrom(ironGolemModel.rightLeg);
@@ -107,21 +99,29 @@ public class IronGolemArmorModel extends HierarchicalModel<IronGolem> implements
 	}
 
 	@Override
-	public void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, int rgba) {
-		this.renderToBuffer(transform, builder, uv2, overlayType, rgba);
-	}
+	public void setupAnim(S state) {
+		super.setupAnim(state);
+		float f = state.attackTicksRemaining;
+		float f1 = state.walkAnimationSpeed;
+		float f2 = state.walkAnimationPos;
+		if (f > 0.0F) {
+			this.rightArm.xRot = -2.0F + 1.5F * Mth.triangleWave(f, 10.0F);
+			this.leftArm.xRot = -2.0F + 1.5F * Mth.triangleWave(f, 10.0F);
+		} else {
+			int i = state.offerFlowerTick;
+			if (i > 0) {
+				this.rightArm.xRot = -0.8F + 0.025F * Mth.triangleWave((float)i, 70.0F);
+				this.leftArm.xRot = 0.0F;
+			} else {
+				this.rightArm.xRot = (-0.2F + 1.5F * Mth.triangleWave(f2, 13.0F)) * f1;
+				this.leftArm.xRot = (-0.2F - 1.5F * Mth.triangleWave(f2, 13.0F)) * f1;
+			}
+		}
 
-	@Override
-	public ModelPart root() {
-		return this.root;
-	}
-
-	@Override
-	public void setupAnim(IronGolem entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-		this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
-		this.head.xRot = headPitch * ((float)Math.PI / 180F);
-		this.rightLeg.xRot = -1.5F * Mth.triangleWave(limbSwing, 13.0F) * limbSwingAmount;
-		this.leftLeg.xRot = 1.5F * Mth.triangleWave(limbSwing, 13.0F) * limbSwingAmount;
+		this.head.yRot = state.yRot * (float) (Math.PI / 180.0D);
+		this.head.xRot = state.xRot * (float) (Math.PI / 180.0D);
+		this.rightLeg.xRot = -1.5F * Mth.triangleWave(f2, 13.0F) * f1;
+		this.leftLeg.xRot = 1.5F * Mth.triangleWave(f2, 13.0F) * f1;
 		this.rightLeg.yRot = 0.0F;
 		this.leftLeg.yRot = 0.0F;
 	}

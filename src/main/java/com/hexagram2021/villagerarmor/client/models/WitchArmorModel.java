@@ -1,17 +1,14 @@
 package com.hexagram2021.villagerarmor.client.models;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.*;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.WitchRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.monster.Witch;
 
-public class WitchArmorModel<T extends Witch> extends HierarchicalModel<T> implements IHumanoidModel, VillagerHeadModel {
-	protected final ModelPart root;
+public class WitchArmorModel<S extends WitchRenderState> extends EntityModel<S> implements IHumanoidModel, VillagerHeadModel {
 	protected final ModelPart head;
 	protected final ModelPart body;
 	protected final ModelPart leftLeg;
@@ -19,7 +16,7 @@ public class WitchArmorModel<T extends Witch> extends HierarchicalModel<T> imple
 	protected final ModelPart arms;
 
 	public WitchArmorModel(ModelPart root) {
-		this.root = root;
+		super(root);
 		this.head = root.getChild("head");
 		this.body = root.getChild("body");
 		this.arms = root.getChild("arms");
@@ -75,8 +72,7 @@ public class WitchArmorModel<T extends Witch> extends HierarchicalModel<T> imple
 	}
 
 	@SuppressWarnings("unused")
-	public void copyPropertiesTo(WitchArmorModel<T> model) {
-		super.copyPropertiesTo(model);
+	public void copyPropertiesTo(WitchArmorModel<S> model) {
 		model.head.copyFrom(this.head);
 		model.body.copyFrom(this.body);
 		model.arms.copyFrom(this.arms);
@@ -85,29 +81,21 @@ public class WitchArmorModel<T extends Witch> extends HierarchicalModel<T> imple
 	}
 
 	@Override
-	public <E extends Entity> void propertiesCopyFrom(EntityModel<E> model) {
-		this.attackTime = model.attackTime;
-		this.riding = model.riding;
-		this.young = model.young;
-		if(model instanceof WitchModel<?> witchModel) {
-			this.head.copyFrom(witchModel.head);
-			this.body.copyFrom(witchModel.root.getChild("body"));
-			this.arms.copyFrom(witchModel.root.getChild("arms"));
+	public <E extends EntityRenderState> void propertiesCopyFrom(EntityModel<E> model) {
+		if(model instanceof WitchModel witchModel) {
+			this.head.copyFrom(witchModel.getHead());
+			this.body.copyFrom(witchModel.root().getChild("body"));
+			this.arms.copyFrom(witchModel.root().getChild("arms"));
 			this.rightLeg.copyFrom(witchModel.rightLeg);
 			this.leftLeg.copyFrom(witchModel.leftLeg);
 		}
 	}
 
 	@Override
-	public <E extends Entity> void afterSetPartVisibility(EntityModel<E> model) {
-		if(model instanceof IllagerModel<?> illagerModel) {
-			this.arms.visible &= illagerModel.arms.visible;
+	public <E extends EntityRenderState> void afterSetPartVisibility(EntityModel<E> model) {
+		if(model instanceof WitchModel witchModel) {
+			this.arms.visible &= witchModel.root().getChild("arms").visible;
 		}
-	}
-
-	@Override
-	public void renderModelToBuffer(PoseStack transform, VertexConsumer builder, int uv2, int overlayType, int rgba) {
-		this.renderToBuffer(transform, builder, uv2, overlayType, rgba);
 	}
 
 	@Override
@@ -116,22 +104,11 @@ public class WitchArmorModel<T extends Witch> extends HierarchicalModel<T> imple
 	}
 
 	@Override
-	public ModelPart root() {
-		return this.root;
-	}
-
-	@Override
-	public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-		this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
-		this.head.xRot = headPitch * ((float)Math.PI / 180F);
-		this.head.zRot = 0.0F;
-		
-		this.arms.y = 3.0F;
-		this.arms.z = -1.0F;
-		this.arms.xRot = -0.75F;
-		this.rightLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-		this.leftLeg.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount * 0.5F;
-		this.rightLeg.yRot = 0.0F;
-		this.leftLeg.yRot = 0.0F;
+	public void setupAnim(S state) {
+		super.setupAnim(state);
+		this.head.yRot = state.yRot * (float) (Math.PI / 180.0D);
+		this.head.xRot = state.xRot * (float) (Math.PI / 180.0D);
+		this.rightLeg.xRot = Mth.cos(state.walkAnimationPos * 0.6662F) * 1.4F * state.walkAnimationSpeed * 0.5F;
+		this.leftLeg.xRot = Mth.cos(state.walkAnimationPos * 0.6662F + (float) Math.PI) * 1.4F * state.walkAnimationSpeed * 0.5F;
 	}
 }

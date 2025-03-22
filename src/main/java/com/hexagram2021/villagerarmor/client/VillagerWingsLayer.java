@@ -10,10 +10,9 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.equipment.EquipmentModel;
 import net.minecraft.world.item.equipment.Equippable;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -33,15 +32,14 @@ public class VillagerWingsLayer<S extends LivingEntityRenderState & IHumanoidRen
 
 	@Override
 	public void render(PoseStack transform, MultiBufferSource bufferSource, int uv2, S renderState, float netHeadYaw, float headPitch) {
-		ItemStack itemstack = renderState.val$chestItem();
+		ItemStack itemstack = renderState.val$chestEquipment();
 		Equippable equippable = itemstack.get(DataComponents.EQUIPPABLE);
-		if (equippable != null && equippable.model().isPresent()) {
+		if (equippable != null && equippable.assetId().isPresent()) {
 			VillagerElytraModel<S> model = renderState.isBaby ? this.elytraBabyModel : this.elytraModel;
-			ResourceLocation modelId = equippable.model().get();
 			transform.pushPose();
 			transform.translate(0.0F, 0.0F, 0.125F);
 			model.setupAnim(renderState);
-			this.equipmentRenderer.renderLayers(EquipmentModel.LayerType.WINGS, modelId, model, itemstack, transform, bufferSource, uv2, null);
+			this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WINGS, equippable.assetId().get(), model, itemstack, transform, bufferSource, uv2, null);
 			transform.popPose();
 		}
 	}

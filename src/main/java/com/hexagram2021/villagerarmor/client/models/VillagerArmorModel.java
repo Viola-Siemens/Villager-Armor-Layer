@@ -1,7 +1,8 @@
 package com.hexagram2021.villagerarmor.client.models;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.VillagerHeadModel;
+import net.minecraft.client.model.VillagerLikeModel;
 import net.minecraft.client.model.VillagerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -10,7 +11,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.util.Mth;
 
-public class VillagerArmorModel<S extends VillagerRenderState> extends EntityModel<S> implements IHumanoidModel, VillagerHeadModel {
+public class VillagerArmorModel<S extends VillagerRenderState> extends EntityModel<S> implements IHumanoidModel, VillagerLikeModel {
 	protected final ModelPart head;
 	protected final ModelPart body;
 	protected final ModelPart arms;
@@ -96,6 +97,12 @@ public class VillagerArmorModel<S extends VillagerRenderState> extends EntityMod
 	@Override
 	public void hatVisible(boolean visible) {
 		this.head.visible = visible;
+	}
+
+	@Override
+	public void translateToArms(PoseStack transform) {
+		this.root.translateAndRotate(transform);
+		this.arms.translateAndRotate(transform);
 	}
 
 	@Override

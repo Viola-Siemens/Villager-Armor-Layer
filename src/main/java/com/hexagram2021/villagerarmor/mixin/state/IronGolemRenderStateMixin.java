@@ -9,11 +9,13 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(IronGolemRenderState.class)
 public class IronGolemRenderStateMixin implements IHumanoidRenderState {
 	@Unique
-	private ItemStack val$chestItem = ItemStack.EMPTY;
+	private ItemStack val$headEquipment = ItemStack.EMPTY;
 	@Unique
-	private ItemStack val$legItem = ItemStack.EMPTY;
+	private ItemStack val$chestEquipment = ItemStack.EMPTY;
 	@Unique
-	private ItemStack val$feetItem = ItemStack.EMPTY;
+	private ItemStack val$legEquipment = ItemStack.EMPTY;
+	@Unique
+	private ItemStack val$feetEquipment = ItemStack.EMPTY;
 	@Unique
 	private boolean val$isCrouching;
 	@Unique
@@ -24,18 +26,23 @@ public class IronGolemRenderStateMixin implements IHumanoidRenderState {
 	private float val$elytraRotZ;
 
 	@Override
-	public ItemStack val$chestItem() {
-		return this.val$chestItem;
+	public ItemStack val$headEquipment() {
+		return this.val$headEquipment;
 	}
 
 	@Override
-	public ItemStack val$legItem() {
-		return this.val$legItem;
+	public ItemStack val$chestEquipment() {
+		return this.val$chestEquipment;
 	}
 
 	@Override
-	public ItemStack val$feetItem() {
-		return this.val$feetItem;
+	public ItemStack val$legEquipment() {
+		return this.val$legEquipment;
+	}
+
+	@Override
+	public ItemStack val$feetEquipment() {
+		return this.val$feetEquipment;
 	}
 
 	@Override
@@ -59,18 +66,23 @@ public class IronGolemRenderStateMixin implements IHumanoidRenderState {
 	}
 
 	@Override
-	public void val$setChestItem(ItemStack chestItem) {
-		this.val$chestItem = chestItem;
+	public void val$setHeadEquipment(ItemStack headItem) {
+		this.val$headEquipment = headItem;
 	}
 
 	@Override
-	public void val$setLegItem(ItemStack legItem) {
-		this.val$legItem = legItem;
+	public void val$setChestEquipment(ItemStack chestItem) {
+		this.val$chestEquipment = chestItem;
 	}
 
 	@Override
-	public void val$setFeetItem(ItemStack feetItem) {
-		this.val$feetItem = feetItem;
+	public void val$setLegEquipment(ItemStack legItem) {
+		this.val$legEquipment = legItem;
+	}
+
+	@Override
+	public void val$setFeetEquipment(ItemStack feetItem) {
+		this.val$feetEquipment = feetItem;
 	}
 
 	@Override

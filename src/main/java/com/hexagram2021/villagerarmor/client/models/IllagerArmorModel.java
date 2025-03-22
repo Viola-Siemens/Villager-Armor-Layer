@@ -1,5 +1,6 @@
 package com.hexagram2021.villagerarmor.client.models;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.*;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -9,7 +10,7 @@ import net.minecraft.client.renderer.entity.state.IllagerRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.AbstractIllager;
 
-public class IllagerArmorModel<S extends IllagerRenderState> extends EntityModel<S> implements IHumanoidModel, VillagerHeadModel {
+public class IllagerArmorModel<S extends IllagerRenderState> extends EntityModel<S> implements IHumanoidModel, VillagerLikeModel {
 	protected final ModelPart head;
 	protected final ModelPart body;
 	protected final ModelPart leftLeg;
@@ -121,6 +122,12 @@ public class IllagerArmorModel<S extends IllagerRenderState> extends EntityModel
 	}
 
 	@Override
+	public void translateToArms(PoseStack transform) {
+		this.root.translateAndRotate(transform);
+		this.arms.translateAndRotate(transform);
+	}
+
+	@Override
 	public void setupAnim(S state) {
 		super.setupAnim(state);
 		this.head.yRot = state.yRot * ((float)Math.PI / 180F);
@@ -135,12 +142,12 @@ public class IllagerArmorModel<S extends IllagerRenderState> extends EntityModel
 			this.leftArm.xRot = (-(float)Math.PI / 5F);
 			this.leftArm.yRot = 0.0F;
 			this.leftArm.zRot = 0.0F;
-			this.leftLeg.xRot = -1.4137167F;
+			this.leftLeg.xRot = (float) (-Math.PI * 0.45D);
 			this.leftLeg.yRot = ((float)Math.PI / 10F);
-			this.leftLeg.zRot = 0.07853982F;
-			this.rightLeg.xRot = -1.4137167F;
+			this.leftLeg.zRot = (float) (Math.PI * 0.025D);
+			this.rightLeg.xRot = (float) (-Math.PI * 0.45D);
 			this.rightLeg.yRot = (-(float)Math.PI / 10F);
-			this.rightLeg.zRot = -0.07853982F;
+			this.rightLeg.zRot = (float) (-Math.PI * 0.025D);
 		} else {
 			this.rightArm.xRot = Mth.cos(state.walkAnimationPos * 0.6662F + (float)Math.PI) * 2.0F * state.walkAnimationSpeed * 0.5F;
 			this.rightArm.yRot = 0.0F;

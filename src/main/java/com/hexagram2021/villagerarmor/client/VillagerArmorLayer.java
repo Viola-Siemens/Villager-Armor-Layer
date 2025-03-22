@@ -9,11 +9,10 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.equipment.EquipmentModel;
 import net.minecraft.world.item.equipment.Equippable;
 
 public class VillagerArmorLayer<S extends LivingEntityRenderState & IHumanoidRenderState, M extends EntityModel<S>, A extends EntityModel<S> & IHumanoidModel> extends RenderLayer<S, M> {
@@ -29,15 +28,15 @@ public class VillagerArmorLayer<S extends LivingEntityRenderState & IHumanoidRen
 	}
 
 	private static boolean shouldRender(Equippable equippable, EquipmentSlot equipmentSlot) {
-		return equippable.model().isPresent() && equippable.slot() == equipmentSlot;
+		return equippable.assetId().isPresent() && equippable.slot() == equipmentSlot;
 	}
 
 	@Override
 	public void render(PoseStack transform, MultiBufferSource buffer, int uv2, S state, float netHeadYaw, float headPitch) {
-		this.renderArmorPiece(transform, buffer, state.val$chestItem(), EquipmentSlot.CHEST, uv2, this.getArmorModel(EquipmentSlot.CHEST));
-		this.renderArmorPiece(transform, buffer, state.val$legItem(), EquipmentSlot.LEGS, uv2, this.getArmorModel(EquipmentSlot.LEGS));
-		this.renderArmorPiece(transform, buffer, state.val$feetItem(), EquipmentSlot.FEET, uv2, this.getArmorModel(EquipmentSlot.FEET));
-		this.renderArmorPiece(transform, buffer, state.headItem, EquipmentSlot.HEAD, uv2, this.getArmorModel(EquipmentSlot.HEAD));
+		this.renderArmorPiece(transform, buffer, state.val$chestEquipment(), EquipmentSlot.CHEST, uv2, this.getArmorModel(EquipmentSlot.CHEST));
+		this.renderArmorPiece(transform, buffer, state.val$legEquipment(), EquipmentSlot.LEGS, uv2, this.getArmorModel(EquipmentSlot.LEGS));
+		this.renderArmorPiece(transform, buffer, state.val$feetEquipment(), EquipmentSlot.FEET, uv2, this.getArmorModel(EquipmentSlot.FEET));
+		this.renderArmorPiece(transform, buffer, state.val$headEquipment(), EquipmentSlot.HEAD, uv2, this.getArmorModel(EquipmentSlot.HEAD));
 	}
 
 	private void renderArmorPiece(PoseStack transform, MultiBufferSource buffer, ItemStack itemStack, EquipmentSlot slotType, int uv2, A model) {
@@ -46,11 +45,10 @@ public class VillagerArmorLayer<S extends LivingEntityRenderState & IHumanoidRen
 			model.propertiesCopyFrom(this.getParentModel());
 			this.setPartVisibility(model, slotType);
 			model.afterSetPartVisibility(this.getParentModel());
-			ResourceLocation resourcelocation = equippable.model().orElseThrow();
-			EquipmentModel.LayerType equipmentmodel$layertype = this.usesInnerModel(slotType)
-					? EquipmentModel.LayerType.HUMANOID_LEGGINGS
-					: EquipmentModel.LayerType.HUMANOID;
-			this.equipmentRenderer.renderLayers(equipmentmodel$layertype, resourcelocation, model, itemStack, transform, buffer, uv2);
+			EquipmentClientInfo.LayerType equipmentclientinfo$layertype = this.usesInnerModel(slotType)
+					? EquipmentClientInfo.LayerType.HUMANOID_LEGGINGS
+					: EquipmentClientInfo.LayerType.HUMANOID;
+			this.equipmentRenderer.renderLayers(equipmentclientinfo$layertype, equippable.assetId().orElseThrow(), model, itemStack, transform, buffer, uv2);
 		}
 	}
 

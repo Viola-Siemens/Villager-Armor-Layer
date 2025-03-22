@@ -34,9 +34,10 @@ public class WitchRendererMixin {
 	@Inject(method = "extractRenderState(Lnet/minecraft/world/entity/monster/Witch;Lnet/minecraft/client/renderer/entity/state/WitchRenderState;F)V", at = @At(value = "TAIL"))
 	public void extractHumanoidRenderState(Witch entity, WitchRenderState state, float partialTick, CallbackInfo ci) {
 		IHumanoidRenderState humanoidRenderState = (IHumanoidRenderState)state;
-		humanoidRenderState.val$setChestItem(entity.getItemBySlot(EquipmentSlot.CHEST).copy());
-		humanoidRenderState.val$setLegItem(entity.getItemBySlot(EquipmentSlot.LEGS).copy());
-		humanoidRenderState.val$setFeetItem(entity.getItemBySlot(EquipmentSlot.FEET).copy());
+		humanoidRenderState.val$setHeadEquipment(entity.getItemBySlot(EquipmentSlot.HEAD).copy());
+		humanoidRenderState.val$setChestEquipment(entity.getItemBySlot(EquipmentSlot.CHEST).copy());
+		humanoidRenderState.val$setLegEquipment(entity.getItemBySlot(EquipmentSlot.LEGS).copy());
+		humanoidRenderState.val$setFeetEquipment(entity.getItemBySlot(EquipmentSlot.FEET).copy());
 		humanoidRenderState.val$setIsCrouching(entity.isCrouching());
 		humanoidRenderState.val$setElytraRotX(entity.elytraAnimationState.getRotX(partialTick));
 		humanoidRenderState.val$setElytraRotY(entity.elytraAnimationState.getRotY(partialTick));
